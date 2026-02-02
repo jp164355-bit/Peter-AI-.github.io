@@ -1,4 +1,3 @@
-
 <html lang="en">
 <head>
   <title>Peter AI</title>
@@ -141,7 +140,7 @@
     }
     #input-area input:focus {
       border-color: var(--primary);
-      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3);
+      box-shadow: 0 0 0 3px rgba(59,130,246,0.3);
     }
     #input-area button {
       padding: 0.8rem 1.3rem;
@@ -188,4 +187,77 @@
   </main>
 
   <footer>
-    Peter AI – enhanced multilingual 
+    Peter AI – ChatGPT‑style assistant
+  </footer>
+
+  <script>
+    const chat = document.getElementById("chat");
+    const input = document.getElementById("user-input");
+    const typing = document.getElementById("typing");
+
+    // === CONFIG (you change these) ===
+    const API_KEY = "YOUR_API_KEY"; // e.g., OpenAI, DeepSeek, etc.
+    const API_ENDPOINT = "YOUR_API_ENDPOINT"; // e.g., "https://api.openai.com/v1/chat/completions"
+
+    async function askAI(prompt) {
+      try {
+        const res = await fetch(API_ENDPOINT, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${API_KEY}`
+          },
+          body: JSON.stringify({
+            model: "gpt-4o", // or whatever model you use
+            messages: [{ role: "user", content: prompt }],
+            max_tokens: 1000,
+            temperature: 0.7
+          })
+        });
+        const data = await res.json();
+        return data.choices?.[0]?.message?.content || "No response.";
+      } catch (err) {
+        return "Error contacting AI. Check console.";
+      }
+    }
+
+    function addMsg(text, isUser) {
+      const div = document.createElement("div");
+      div.className = `msg ${isUser ? "user" : "ai"}`;
+      div.textContent = text;
+      chat.appendChild(div);
+      chat.scrollTop = chat.scrollHeight;
+    }
+
+    function showTyping() {
+      typing.style.display = "block";
+      chat.scrollTop = chat.scrollHeight;
+    }
+    function hideTyping() {
+      typing.style.display = "none";
+    }
+
+    async function send() {
+      const text = input.value.trim();
+      if (!text) return;
+
+      addMsg(text, true);
+      input.value = "";
+
+      showTyping();
+
+      const reply = await askAI(text);
+      hideTyping();
+      addMsg(reply, false);
+    }
+
+    input.addEventListener("keypress", (e) => {
+      if (e.key === "Enter") send();
+    });
+
+    window.addEventListener("load", () => {
+      addMsg("Welcome to Peter AI! I can answer questions in any language, explain code, help with studies, and more. Ask me anything!", false);
+    });
+  </script>
+</body>
+</html>
